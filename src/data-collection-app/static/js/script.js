@@ -1,47 +1,73 @@
-// script.js
 document.addEventListener('DOMContentLoaded', () => {
     const gridContainer = document.getElementById('grid-container');
     const saveBtn = document.getElementById('saveBtn');
+    const colorOptions = document.querySelectorAll('.color-option');
     const gridSize = 32;
-    let matrix = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+    let currentColor = '#000000'; // Default color
+    let isDragging = false;
 
-    // Function to create the grid
+    let matrix = Array.from({ length: gridSize }, () =>
+    Array.from({ length: gridSize }, () =>
+        [255, 255, 255])); // Initialize matrix with white color
+
+    // Create the grid
     function createGrid() {
+        gridContainer.style.display = 'grid';
+        gridContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+        gridContainer.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+
         for (let i = 0; i < gridSize * gridSize; i++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
-            cell.addEventListener('mousedown', handleMouseDown);
-            cell.addEventListener('mouseenter', handleMouseEnter);
             cell.dataset.index = i;
             gridContainer.appendChild(cell);
+
+            cell.addEventListener('mousedown', () => isDragging = true);
+            cell.addEventListener('mouseenter', handleCellEnter);
+            cell.addEventListener('mouseup', () => isDragging = false);
         }
     }
 
-    let isDragging = false;
-    document.body.addEventListener('mousedown', () => isDragging = true);
     document.body.addEventListener('mouseup', () => isDragging = false);
 
-    // Function to handle cell activation
+    function handleCellEnter(e) {
+        if (isDragging) {
+            activateCell(e.target);
+        }
+    }
+
     function activateCell(cell) {
-        const index = cell.dataset.index;
+        const index = parseInt(cell.dataset.index);
         const row = Math.floor(index / gridSize);
         const col = index % gridSize;
-        matrix[row][col] = 1;
-        cell.style.backgroundColor = 'black';
+        const colorValue = hexToRgb(currentColor);
+        matrix[row][col] = [colorValue.r, colorValue.g, colorValue.b];
+        cell.style.backgroundColor = currentColor;
     }
 
-    // Mouse down event
-    function handleMouseDown(e) {
-        if (e.target.classList.contains('cell')) {
-            activateCell(e.target);
-        }
-    }
+    // Set up color selection
+    colorOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            currentColor = this.getAttribute('data-color');
+            // Highlight selected color option, optional visual feedback
+            colorOptions.forEach(opt => opt.style.outline = 'none');
+            this.style.outline = '2px solid black';
+        });
+    });
 
-    // Mouse enter event for drag functionality
-    function handleMouseEnter(e) {
-        if (isDragging && e.target.classList.contains('cell')) {
-            activateCell(e.target);
-        }
+    // Convert HEX color to RGB
+    function hexToRgb(hex) {
+        let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+    
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
 
     createGrid();
@@ -53,21 +79,21 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.width = gridSize;
         canvas.height = gridSize;
 
-        // Draw the matrix on the canvas
         for (let row = 0; row < gridSize; row++) {
             for (let col = 0; col < gridSize; col++) {
-                ctx.fillStyle = matrix[row][col] === 1 ? 'black' : 'white';
-                ctx.fillRect(col, row, 1, 1); // Draw each cell
+                const [r, g, b] = matrix[row][col];
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+                ctx.fillRect(col, row, 1, 1);
             }
         }
 
-        // Trigger download of the canvas as an image
-        const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
         const link = document.createElement('a');
-        link.download = 'matrix-image.png';
-        link.href = image;
+        link.download = 'grid-image.png';
+        link.href = canvas.toDataURL('image/png');
         link.click();
     }
 
     saveBtn.addEventListener('click', saveMatrixAsImage);
+
+    createGrid();
 });
