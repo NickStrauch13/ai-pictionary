@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.addEventListener('mousedown', () => isDragging = true);
             cell.addEventListener('mouseenter', handleCellEnter);
             cell.addEventListener('mouseup', () => isDragging = false);
+            cell.addEventListener('click', handleCellClick);
         }
     }
 
@@ -34,6 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isDragging) {
             activateCell(e.target);
         }
+    }
+
+    function handleCellClick(e) {
+        activateCell(e.target);
     }
 
     function activateCell(cell) {
@@ -70,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } : null;
     }
 
-    createGrid();
 
     // Function to save the matrix as an image
     function saveMatrixAsImage() {

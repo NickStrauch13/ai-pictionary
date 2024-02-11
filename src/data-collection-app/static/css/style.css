@@ -17,6 +17,7 @@ body, html {
     min-height: 100vh;
     padding: 10px; /* Reduced padding on smaller screens */
     box-sizing: border-box;
+    margin: 0;
 }
 
 /* Style the color options */
@@ -34,36 +35,34 @@ body, html {
     min-height: 30px; /* Minimum size for touch targets */
     margin: 3px; /* Adjusted margin */
     border: 2px solid #ffffff;
-    border-radius: 10%;
+    border-radius: 20%;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.color-option:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.8);
 }
 
 /* Style the grid container */
 #grid-container {
     display: grid;
     grid-template-columns: repeat(32, 1fr);
-    width: 90vw; /* Increased to use more of the viewport width */
-    height: 90vw; /* Keep the grid square */
+    gap: 1px; /* This creates the 'border' effect */
+    background-color: #e0e0e0; /* Light grey, matching the gap color */
+    width: 40vw; /* Increased to use more of the viewport width */
+    height: 40vw; /* Keep the grid square */
     max-width: 600px;
     max-height: 600px;
-    border: 1px solid #ccc;
     overflow: hidden;
     margin-bottom: 15px;
+    border: #000000 solid 3px;
 }
 
 /* Style the individual cells within the grid */
 .cell {
-    border-right: 1px solid #e0e0e0;
-    border-bottom: 1px solid #e0e0e0;
     box-sizing: border-box;
-}
-
-.cell:nth-child(32n) {
-    border-right: none;
-}
-.cell:nth-last-child(-n+32) {
-    border-bottom: none;
+    background-color: #f0f0f0;;
 }
 
 /* Style the save button */
