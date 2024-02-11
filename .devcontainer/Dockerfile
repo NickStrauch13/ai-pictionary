@@ -13,4 +13,4 @@ RUN su vscode -c "python -m venv ${VENV_PATH}" \
     && rm -rf /tmp/
 
 # Add the project directory to the PYTHONPATH
-ENV PYTHONPATH=/workspaces/python-template:${PYTHONPATH}
+ENV PYTHONPATH=/workspaces/ai-pictionary:${PYTHONPATH}
