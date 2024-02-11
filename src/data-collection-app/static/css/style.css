@@ -1,0 +1,33 @@
+/* style.css */
+body, html {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #f0f0f0;
+}
+
+#grid-container {
+    display: grid;
+    grid-template-columns: repeat(32, 1fr);
+    grid-template-rows: repeat(32, 1fr);
+    width: 80vmin; /* 80% of the viewport's minimum dimension */
+    height: 80vmin;
+    border: 1px solid #ccc;
+    margin-bottom: 20px; /* Adds some space between the grid and the button */
+}
+
+.cell {
+    border: 1px solid #ccc;
+    width: 100%;
+    height: 100%;
+}
+
+button#saveBtn {
+    display: block;
+    margin: 0 auto; /* Centers the button horizontally */
+    padding: 10px 20px;
+    cursor: pointer;
+}
