@@ -17,29 +17,53 @@ body, html {
     width: 100%;
 }
 
-.prompt-container, .counter-container {
+.prompt-container, .counter-container, .instructions-container {
     text-align: center; 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 15vw;
+    width: 20vw;
 }
 
 #promptText {
-    font-size: 44px; 
+    font-size: 40px; 
     font-family:Verdana, Geneva, Tahoma, sans-serif;
     font-weight: bold;
     color: #ececec;
 }
 
 #saveCounter {
-    font-size: 44px; 
+    font-size: 30px; 
     font-family:Verdana, Geneva, Tahoma, sans-serif;
     font-weight: bold;
     color: #ececec;
-
+    margin-top: 60px;
 }
+
+#instructionsTitle {
+    font-size: 20px; 
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: bold;
+    color: #ececec;
+    margin-bottom: 30px;
+}
+
+#instructions {
+    font-size: 16px; 
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    color: #ececec;
+    margin-bottom: 10px;
+}
+
+#totalSaveCounter {
+    font-size: 30px; 
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: bold;
+    color: #ececec;
+    margin-top: 60px;
+}
+
 
 #sketchSubject {
     font-size: 44px;
@@ -87,6 +111,7 @@ body, html {
 
 /* Style the grid container */
 #grid-container {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(32, 1fr);
     /*gap: 1px; /* This creates the 'border' effect */
@@ -105,6 +130,17 @@ body, html {
 .cell {
     box-sizing: border-box;
     background-color: #f0f0f0;;
+}
+
+#checkMark {
+    display: none; /* Initially hidden */
+    position: absolute;
+    font-size: 150px; /* Adjust size as needed */
+    color: green; /* Check mark color */
+    opacity: 0; /* Start fully transparent */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the check mark */
 }
 
 /* Style the save button */

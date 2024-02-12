@@ -2,11 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridContainer = document.getElementById('grid-container');
     const saveBtn = document.getElementById('saveBtn');
     const saveCounter = document.getElementById('saveCounter');
+    const totalSaveCounter = document.getElementById('totalSaveCounter');
     const colorOptions = document.querySelectorAll('.color-option');
     const resetBtn = document.getElementById('resetBtn');
     const sketchSubjects = ["Cat", "House", "Tree", "Car", "Mountain"];
     let currentSubjectIndex = 0;
     let saveCount = 0;
+    let totalSaveCount = 0;
     const gridSize = 32;
     let currentColor = '#000000'; // Default color
     let isDragging = false;
@@ -92,12 +94,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     saveBtn.addEventListener('click', () => {
         saveCount++;
+        totalSaveCount++;
         if (saveCount >= 5) {
             saveCount = 0; // Reset counter
             currentSubjectIndex = (currentSubjectIndex + 1) % sketchSubjects.length; // Cycle through subjects
             updateSketchSubject(); // Update the subject
         }
         saveCounter.textContent = `${saveCount}/5`; // Update the counter display
+        totalSaveCounter.textContent = `${totalSaveCount}/50 Submitted`; // Update the total counter display
+        clearCanvas();
+
+        // Show and then hide the check mark
+        const checkMark = document.getElementById('checkMark');
+        checkMark.style.display = 'block'; // Make the check mark visible
+        checkMark.style.opacity = 1; // Set opacity to 1 for full visibility
+
+        setTimeout(() => {
+            // Start fade out
+            let fadeEffect = setInterval(() => {
+                if (!checkMark.style.opacity) {
+                    checkMark.style.opacity = 1;
+                }
+                if (checkMark.style.opacity > 0) {
+                    checkMark.style.opacity -= 0.1;
+                } else {
+                    clearInterval(fadeEffect);
+                    checkMark.style.display = 'none'; // Hide after fading
+                }
+            }, 100); // Adjust for smoother fade effect
+        }, 2000); // Keep visible for 2000ms before starting to fade
     });
 
 
@@ -125,7 +150,9 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.addEventListener('click', saveMatrixAsImage);
 
         
-    resetBtn.addEventListener('click', () => {
+    resetBtn.addEventListener('click', clearCanvas);
+
+    function clearCanvas() {
         const cells = document.querySelectorAll('.cell');
         // Clear the matrix
         matrix = Array.from({ length: gridSize }, () =>
@@ -135,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cells.forEach(cell => {
             cell.style.backgroundColor = '#f0f0f0'; // Reset cells to white
         });
-    });
+    }
 
     createGrid();
 });

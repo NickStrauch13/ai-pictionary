@@ -9,8 +9,9 @@
 <body>
     <div class="page-container">
         <div class="prompt-container">
-            <span id="promptText">Please sketch: </span>
+            <span id="promptText">Please sketch a: </span>
             <span id="sketchSubject"></span>
+            <span id="saveCounter">0/5</span>
         </div>
         <div class="main-container">
             <div id="color-options">
@@ -26,14 +27,19 @@
                 <button class="color-option" data-color="#00e1ff" style="background-color: #00e1ff;"></button>
                 <!-- Add more colors -->
             </div>
-            <div id="grid-container"></div>
+            <div id="grid-container">
+                <div id="checkMark">✓</div>
+            </div>
             <div class="button-container">
-                <button id="saveBtn">Save as Image</button>
+                <button id="saveBtn">Submit Sketch</button>
                 <button id="resetBtn">Clear</button>
             </div>
         </div>
-        <div class="counter-container">
-            <span id="saveCounter">0/5</span>
+        <div class="instructions-container">
+            <span id="instructionsTitle">Thank you for helping me collect data for my AI Pictionary game!</span>
+            <span id="instructions">There are 10 subject categories in total, each with 5 submissions.</span>
+            <span id="instructions">These are only meant to be quick, 10-30 second sketches. Every sketch helps a ton! </span>
+            <span id="totalSaveCounter">0/50 Submitted</span>
         </div>
     </div>
     <script src="static/js/script.js"></script>
