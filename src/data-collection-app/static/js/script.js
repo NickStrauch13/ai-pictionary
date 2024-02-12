@@ -1,7 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     const gridContainer = document.getElementById('grid-container');
     const saveBtn = document.getElementById('saveBtn');
+    const saveCounter = document.getElementById('saveCounter');
     const colorOptions = document.querySelectorAll('.color-option');
+    const resetBtn = document.getElementById('resetBtn');
+    const sketchSubjects = ["Cat", "House", "Tree", "Car", "Mountain"];
+    let currentSubjectIndex = 0;
+    let saveCount = 0;
     const gridSize = 32;
     let currentColor = '#000000'; // Default color
     let isDragging = false;
@@ -42,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function activateCell(cell) {
+        if (currentColor === null) {
+            currentColor = '#000000';
+        }
         const index = parseInt(cell.dataset.index);
         const row = Math.floor(index / gridSize);
         const col = index % gridSize;
@@ -56,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentColor = this.getAttribute('data-color');
             // Highlight selected color option, optional visual feedback
             colorOptions.forEach(opt => opt.style.outline = 'none');
-            this.style.outline = '2px solid black';
+            this.style.outline = '2px solid gold';
         });
     });
 
@@ -74,6 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
             b: parseInt(result[3], 16)
         } : null;
     }
+
+    function updateSketchSubject() {
+        const sketchSubject = document.getElementById('sketchSubject');
+        sketchSubject.textContent = sketchSubjects[currentSubjectIndex];
+    }
+    updateSketchSubject();
+
+
+    saveBtn.addEventListener('click', () => {
+        saveCount++;
+        if (saveCount >= 5) {
+            saveCount = 0; // Reset counter
+            currentSubjectIndex = (currentSubjectIndex + 1) % sketchSubjects.length; // Cycle through subjects
+            updateSketchSubject(); // Update the subject
+        }
+        saveCounter.textContent = `${saveCount}/5`; // Update the counter display
+    });
 
 
     // Function to save the matrix as an image
@@ -98,6 +123,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     saveBtn.addEventListener('click', saveMatrixAsImage);
+
+        
+    resetBtn.addEventListener('click', () => {
+        const cells = document.querySelectorAll('.cell');
+        // Clear the matrix
+        matrix = Array.from({ length: gridSize }, () =>
+            Array.from({ length: gridSize }, () =>
+                [255, 255, 255])); // Reset to white or your default grid color
+        // Reset the visual grid
+        cells.forEach(cell => {
+            cell.style.backgroundColor = '#f0f0f0'; // Reset cells to white
+        });
+    });
 
     createGrid();
 });

@@ -7,21 +7,34 @@
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
-    <div class="main-container">
-        <div id="color-options">
-            <button class="color-option" data-color="#000000" style="background-color: #000000;"></button>
-            <button class="color-option" data-color="#830083" style="background-color: #830083;"></button>
-            <button class="color-option" data-color="#ff0000" style="background-color: #ff0000;"></button>
-            <button class="color-option" data-color="#ff8801" style="background-color: #ff8801;"></button>
-            <button class="color-option" data-color="#ffff00" style="background-color: #ffff00;"></button>
-            <button class="color-option" data-color="#00ff00" style="background-color: #00ff00;"></button>
-            <button class="color-option" data-color="#005300" style="background-color: #005300;"></button>
-            <button class="color-option" data-color="#0000ff" style="background-color: #0000ff;"></button>
-            <button class="color-option" data-color="#00e1ff" style="background-color: #00e1ff;"></button>
-            <!-- Add more colors -->
+    <div class="page-container">
+        <div class="prompt-container">
+            <span id="promptText">Please sketch: </span>
+            <span id="sketchSubject"></span>
         </div>
-        <div id="grid-container"></div>
-        <button id="saveBtn">Save as Image</button>
+        <div class="main-container">
+            <div id="color-options">
+                <button class="color-option" data-color="#000000" style="background-color: #000000;"></button>
+                <button class="color-option" data-color="#573713" style="background-color: #573713;"></button>
+                <button class="color-option" data-color="#830083" style="background-color: #830083;"></button>
+                <button class="color-option" data-color="#ff0000" style="background-color: #ff0000;"></button>
+                <button class="color-option" data-color="#ff8801" style="background-color: #ff8801;"></button>
+                <button class="color-option" data-color="#ffff00" style="background-color: #ffff00;"></button>
+                <button class="color-option" data-color="#00ff00" style="background-color: #00ff00;"></button>
+                <button class="color-option" data-color="#005300" style="background-color: #005300;"></button>
+                <button class="color-option" data-color="#0000ff" style="background-color: #0000ff;"></button>
+                <button class="color-option" data-color="#00e1ff" style="background-color: #00e1ff;"></button>
+                <!-- Add more colors -->
+            </div>
+            <div id="grid-container"></div>
+            <div class="button-container">
+                <button id="saveBtn">Save as Image</button>
+                <button id="resetBtn">Clear</button>
+            </div>
+        </div>
+        <div class="counter-container">
+            <span id="saveCounter">0/5</span>
+        </div>
     </div>
     <script src="static/js/script.js"></script>
 </body>
