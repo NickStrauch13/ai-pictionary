@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const colorOptions = document.querySelectorAll('.color-option');
     const resetBtn = document.getElementById('resetBtn');
     const sketchSubjects = ["Cat", "House", "Tree", "Car", "Mountain"];
+    shuffleArray(sketchSubjects);
     let currentSubjectIndex = 0;
     let saveCount = 0;
     let totalSaveCount = 0;
@@ -36,7 +37,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Add event listeners for dragging
     document.body.addEventListener('mouseup', () => isDragging = false);
+    // gridContainer.addEventListener('mouseleave', () => {
+    //     isDragging = false;
+    // });
+    document.body.addEventListener('mouseup', () => isDragging = false);
+    document.addEventListener('mousemove', (event) => {
+        // Check if the left mouse button is not pressed
+        if (event.buttons !== 1) {
+            isDragging = false;
+        }
+    });
+
+    // shuffle array using Knuth shuffle
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
 
     function handleCellEnter(e) {
         if (isDragging) {
@@ -91,8 +111,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateSketchSubject();
 
+    function createPopup() {
+        const popup = document.createElement('div');
+        popup.id = 'popup';
+        popup.style.position = 'fixed';
+        popup.style.top = '50%';
+        popup.style.left = '50%';
+        popup.style.transform = 'translate(-50%, -50%)';
+        popup.style.backgroundColor = '#f8f9fa'; // Light background color for contrast
+        popup.style.padding = '20px';
+        popup.style.zIndex = '1000';
+        popup.style.border = '2px solid #302e52'; // Main color theme for border
+        popup.style.borderRadius = '10px'; // Rounded corners
+        popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // More pronounced shadow for depth
+        popup.innerHTML = `
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                <button id="closePopup" style="background-color: #302e52; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;">X</button>
+            </div>
+            <p style="color: #333; font-size: 20px; font-weight: bold; line-height: 1.5;">Thank you for helping me collect data! I really appreciate your time. If you want to continue drawing, you can close this window and continue.</p>
+        `;
+        document.body.appendChild(popup);
+    
+        document.getElementById('closePopup').addEventListener('click', function() {
+            popup.style.display = 'none';
+        });
+    }
+
 
     saveBtn.addEventListener('click', () => {
+        // Convert the matrix as an image, save to S3 bucket
+        saveMatrixAsImage();
+
         saveCount++;
         totalSaveCount++;
         if (saveCount >= 5) {
@@ -103,6 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveCounter.textContent = `${saveCount}/5`; // Update the counter display
         totalSaveCounter.textContent = `${totalSaveCount}/50 Submitted`; // Update the total counter display
         clearCanvas();
+
+        if (totalSaveCount === 50) {
+            createPopup(); // Display the popup
+        }
 
         // Show and then hide the check mark
         const checkMark = document.getElementById('checkMark');
@@ -127,12 +180,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Function to save the matrix as an image
-    function saveMatrixAsImage() {
+    async function saveMatrixAsImage() {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = gridSize;
         canvas.height = gridSize;
-
+    
+        // Draw the matrix onto the canvas
         for (let row = 0; row < gridSize; row++) {
             for (let col = 0; col < gridSize; col++) {
                 const [r, g, b] = matrix[row][col];
@@ -140,14 +194,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.fillRect(col, row, 1, 1);
             }
         }
-
-        const link = document.createElement('a');
-        link.download = 'grid-image.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+    
+        canvas.toBlob(async (blob) => {
+            // Get the current sketch subject and generate a unique filename
+            const sketchSubject = sketchSubjects[currentSubjectIndex];
+            const uniqueSequence = Date.now(); // Example of generating a unique sequence
+            const fileName = `${sketchSubject}_${uniqueSequence}.png`;
+    
+            try {
+                // Fetch the presigned URL from your server, including the dynamic filename in the request
+                const response = await fetch('/generate-presigned-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ filename: fileName }) // Send filename to server
+                });
+                const data = await response.json();
+    
+                // Use the presigned URL to upload the image
+                const uploadResponse = await fetch(data.url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'image/png'
+                    },
+                    body: blob
+                });
+    
+                if (uploadResponse.ok) {
+                    console.log('Upload successful');
+                } else {
+                    console.log(uploadResponse)
+                    console.error('Upload failed');
+                }
+            } catch (error) {
+                console.error('Error generating presigned URL or uploading:', error);
+            }
+        }, 'image/png');
     }
 
-    saveBtn.addEventListener('click', saveMatrixAsImage);
 
         
     resetBtn.addEventListener('click', clearCanvas);
@@ -165,4 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     createGrid();
+
+    
 });
