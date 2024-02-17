@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalSaveCounter = document.getElementById('totalSaveCounter');
     const colorOptions = document.querySelectorAll('.color-option');
     const resetBtn = document.getElementById('resetBtn');
-    const sketchSubjects = ["Cat", "House", "Tree", "Car", "Mountain"];
+    const sketchSubjects = ["Butterfly", "Bicycle", "Car", "Whale", "House", "Flower", "Tree", "Basketball", "Baseball", "Airplane"];
     shuffleArray(sketchSubjects);
     let currentSubjectIndex = 0;
     let saveCount = 0;
@@ -208,7 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ filename: fileName }) // Send filename to server
+                    body: JSON.stringify({ filename: fileName,
+                                           sketchsubject: sketchSubject})
                 });
                 const data = await response.json();
     

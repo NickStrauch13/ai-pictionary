@@ -32,12 +32,13 @@ def generate_presigned_url():
     # Extract filename from the request
     data = request.json
     filename = data.get('filename')
+    subject = data.get('sketchsubject')
     
     try:
         s3_client = boto3.client('s3')
         presigned_url = s3_client.generate_presigned_url('put_object',
                                                          Params={'Bucket': 'ai-pictionary-data',
-                                                                 'Key': filename,
+                                                                 'Key': f"{subject}/{filename}",
                                                                  'ContentType': 'image/png'},
                                                          ExpiresIn=3600)
         return jsonify({'url': presigned_url})
