@@ -5,14 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalSaveCounter = document.getElementById('totalSaveCounter');
     const colorOptions = document.querySelectorAll('.color-option');
     const resetBtn = document.getElementById('resetBtn');
-    const sketchSubjects = ["Butterfly", "Bicycle", "Car", "Whale", "House", "Flower", "Tree", "Basketball", "Baseball", "Airplane"];
+    const sketchSubjects = ["Airplane", "Bicycle", "Butterfly", "Car", "Flower", "House", "Ladybug", "Train", "Tree", "Whale"];
     shuffleArray(sketchSubjects);
     let currentSubjectIndex = 0;
     let saveCount = 0;
     let totalSaveCount = 0;
-    const gridSize = 32;
+    const gridSize = 128;
     let currentColor = '#000000'; // Default color
     let isDragging = false;
+    let brushSize = 3;
 
     let matrix = Array.from({ length: gridSize }, () =>
     Array.from({ length: gridSize }, () =>
@@ -30,27 +31,52 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.dataset.index = i;
             gridContainer.appendChild(cell);
 
-            cell.addEventListener('mousedown', () => isDragging = true);
+            // Mouse events
+            cell.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                isDragging = true;
+            });
             cell.addEventListener('mouseenter', handleCellEnter);
             cell.addEventListener('mouseup', () => isDragging = false);
             cell.addEventListener('click', handleCellClick);
+
+            // Touch events
+            cell.addEventListener('touchstart', handleTouchStart, { passive: false });
+            cell.addEventListener('touchmove', handleTouchMove, { passive: false });
+            cell.addEventListener('touchend', handleTouchEnd);
         }
     }
 
     // Add event listeners for dragging
     document.body.addEventListener('mouseup', () => isDragging = false);
-    // gridContainer.addEventListener('mouseleave', () => {
-    //     isDragging = false;
-    // });
-    document.body.addEventListener('mouseup', () => isDragging = false);
-    document.addEventListener('mousemove', (event) => {
-        // Check if the left mouse button is not pressed
-        if (event.buttons !== 1) {
-            isDragging = false;
-        }
-    });
 
-    // shuffle array using Knuth shuffle
+    function handleTouchStart(event) {
+        event.preventDefault(); // Prevent scrolling
+        isDragging = true;
+        const touch = event.touches[0];
+        const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (targetElement && targetElement.classList.contains('cell')) {
+            activateCell(targetElement);
+        }
+    }
+
+    function handleTouchMove(event) {
+        if (isDragging) {
+            event.preventDefault(); // Prevent scrolling
+            const touch = event.touches[0];
+            const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (targetElement && targetElement.classList.contains('cell')) {
+                activateCell(targetElement);
+            }
+        }
+    }
+
+    function handleTouchEnd() {
+        isDragging = false;
+    }
+
+
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -68,6 +94,18 @@ document.addEventListener('DOMContentLoaded', () => {
         activateCell(e.target);
     }
 
+    // function activateCell(cell) {
+    //     if (currentColor === null) {
+    //         currentColor = '#000000';
+    //     }
+    //     const index = parseInt(cell.dataset.index);
+    //     const row = Math.floor(index / gridSize);
+    //     const col = index % gridSize;
+    //     const colorValue = hexToRgb(currentColor);
+    //     matrix[row][col] = [colorValue.r, colorValue.g, colorValue.b];
+    //     cell.style.backgroundColor = currentColor;
+    // }
+
     function activateCell(cell) {
         if (currentColor === null) {
             currentColor = '#000000';
@@ -76,8 +114,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const row = Math.floor(index / gridSize);
         const col = index % gridSize;
         const colorValue = hexToRgb(currentColor);
-        matrix[row][col] = [colorValue.r, colorValue.g, colorValue.b];
-        cell.style.backgroundColor = currentColor;
+
+        // Adjust this loop according to the current brushSize
+        const offset = Math.floor(brushSize / 2); // Calculate offset for larger brush sizes
+        for (let r = row - offset; r <= row + offset; r++) {
+            for (let c = col - offset; c <= col + offset; c++) {
+                updateCell(r, c, colorValue);
+            }
+        }
+    }
+
+    function updateCell(row, col, colorValue) {
+        // Check boundaries
+        if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+            matrix[row][col] = [colorValue.r, colorValue.g, colorValue.b];
+            // Calculate cell index and directly update its style
+            const cellIndex = row * gridSize + col;
+            const cellToUpdate = gridContainer.querySelector(`[data-index="${cellIndex}"]`);
+            if (cellToUpdate) {
+                cellToUpdate.style.backgroundColor = `rgb(${colorValue.r}, ${colorValue.g}, ${colorValue.b})`;
+            }
+        }
     }
 
     // Set up color selection
@@ -161,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkMark = document.getElementById('checkMark');
         checkMark.style.display = 'block'; // Make the check mark visible
         checkMark.style.opacity = 1; // Set opacity to 1 for full visibility
+
 
         setTimeout(() => {
             // Start fade out

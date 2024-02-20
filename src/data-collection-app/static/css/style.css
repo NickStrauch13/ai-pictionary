@@ -78,7 +78,7 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     min-height: 100vh;
     padding: 10px; /* Reduced padding on smaller screens */
     box-sizing: border-box;
@@ -96,8 +96,8 @@ body, html {
 .color-option {
     width: 3vw; /* Relative width for better scaling */
     height: 3vw; /* Relative height for better scaling */
-    min-width: 30px; /* Minimum size for touch targets */
-    min-height: 30px; /* Minimum size for touch targets */
+    min-width: 20px; /* Minimum size for touch targets */
+    min-height: 20px; /* Minimum size for touch targets */
     margin: 3px; /* Adjusted margin */
     border: 2px solid #ffffff;
     border-radius: 20%;
@@ -143,6 +143,17 @@ body, html {
     transform: translate(-50%, -50%); /* Center the check mark */
 }
 
+.button-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 20vw;
+    /* Space all children elelments horizontally evenly */
+    gap: 10px;
+    margin-top: 15px;
+}
+
 /* Style the save button */
 #saveBtn {
     padding: 8px 16px; /* Adjusted padding */
@@ -168,9 +179,53 @@ body, html {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 10px; /* Space from the save button */
 }
 
 #resetBtn:hover {
     background-color: #c82333; /* Darker on hover */
+}
+
+
+
+/* Responsive adjustments for screens narrower than 768px */
+@media (max-width: 768px) {
+    .prompt-container, .counter-container {
+       margin-left: 10px;
+    }
+
+    .instructions-container {
+        margin-right: 20px;
+    }
+
+    #promptText, #saveCounter, #totalSaveCounter, #sketchSubject {
+        font-size: 20px; /* Adjust font size for smaller screens */
+    }
+
+    #instructionsTitle, #instructions {
+        font-size: 12px; /* Adjust font size for smaller text elements */
+    }
+
+    .button-container {
+        width: 100%; /* Make the button container take full width */
+        flex-direction: column; /* Stack buttons vertically */
+        gap: 5px; /* Reduce gap for compact layout */
+    }
+
+    #saveBtn, #resetBtn {
+        font-size: 12px; /* Reduce font size of buttons */
+        padding: 5px 10px; /* Adjust padding for smaller buttons */
+    }
+/* 
+    #color-options {
+    }
+
+    .color-option {
+      
+
+    } */
+
+    #grid-container {
+        max-width: 400px; /* Cap the size to prevent it from becoming too large */
+        max-height: 400px;
+    }
 }
