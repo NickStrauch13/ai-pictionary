@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     saveBtn.addEventListener('click', () => {
         // Convert the matrix as an image, save to S3 bucket
-        saveMatrixAsImage();
+        saveMatrixAsImage(currentSubjectIndex);
 
         saveCount++;
         totalSaveCount++;
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSubjectIndex = (currentSubjectIndex + 1) % sketchSubjects.length; // Cycle through subjects
             updateSketchSubject(); // Update the subject
         }
-        saveCounter.textContent = `${saveCount}/5`; // Update the counter display
+        saveCounter.textContent = `${saveCount+1}/5`; // Update the counter display
         totalSaveCounter.textContent = `${totalSaveCount}/50 Submitted`; // Update the total counter display
         clearCanvas();
 
@@ -232,13 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     clearInterval(fadeEffect);
                     checkMark.style.display = 'none'; // Hide after fading
                 }
-            }, 100); // Adjust for smoother fade effect
-        }, 2000); // Keep visible for 2000ms before starting to fade
+            }, 50); // Adjust for smoother fade effect
+        }, 1200); // Keep visible for 1200ms before starting to fade
     });
 
 
     // Function to save the matrix as an image
-    async function saveMatrixAsImage() {
+    async function saveMatrixAsImage(immediateSubjectIndex) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = gridSize;
@@ -255,8 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
         canvas.toBlob(async (blob) => {
             // Get the current sketch subject and generate a unique filename
-            const sketchSubject = sketchSubjects[currentSubjectIndex];
-            const uniqueSequence = Date.now(); // Example of generating a unique sequence
+            const sketchSubject = sketchSubjects[immediateSubjectIndex];
+            const uniqueSequence = Date.now(); 
             const fileName = `${sketchSubject}_${uniqueSequence}.png`;
     
             try {
