@@ -5,3 +5,4 @@ torchvision==0.17.1+cu118
 matplotlib==3.8.3
 scikit_learn==1.4.1
 seaborn==0.13.2
+grad-cam==1.5.0
