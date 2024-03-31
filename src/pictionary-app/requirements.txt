@@ -1,0 +1,5 @@
+boto3==1.24.87
+numpy==1.26.4
+pandas==2.1.0
+flask==3.0.2
+pillow==10.2.0

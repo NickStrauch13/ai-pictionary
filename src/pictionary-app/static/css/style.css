@@ -1,0 +1,142 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #302e52;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.timer-container {
+    background-color: #6687ff;
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffeb35;
+    font-size: 46px;
+    font-weight: bold;
+}
+
+.timer-prompt {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 10px; /* Reduced padding on smaller screens */
+    box-sizing: border-box;
+    margin: 0;
+}
+
+/* Style the color options */
+#color-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 15px; /* Slightly reduced margin */
+}
+
+.color-option {
+    width: 3vw; /* Relative width for better scaling */
+    height: 3vw; /* Relative height for better scaling */
+    min-width: 20px; /* Minimum size for touch targets */
+    min-height: 20px; /* Minimum size for touch targets */
+    margin: 3px; /* Adjusted margin */
+    border: 2px solid #ffffff;
+    border-radius: 20%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.color-option:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.8);
+}
+
+/* Style the grid container */
+#grid-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(32, 1fr);
+    /*gap: 1px; /* This creates the 'border' effect */
+    background-color: #e0e0e0; /* Light grey, matching the gap color */
+    width: 40vw; /* Increased to use more of the viewport width */
+    height: 40vw; /* Keep the grid square */
+    max-width: 600px;
+    max-height: 600px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: #8c8c8c solid 3px;
+    box-shadow: 0 16px 32px rgba(0,0,0,0.7);
+}
+
+/* Style the individual cells within the grid */
+.cell {
+    box-sizing: border-box;
+    background-color: #f0f0f0;;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 20vw;
+    /* Space all children elelments horizontally evenly */
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Style the save button */
+#saveBtn {
+    padding: 8px 16px; /* Adjusted padding */
+    font-size: 14px; /* Adjusted font size */
+    color: #ffffff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#saveBtn:hover {
+    background-color: #0056b3;
+}
+
+#resetBtn {
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #ffffff;
+    background-color: #dc3545; /* Bootstrap danger color for contrast */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#resetBtn:hover {
+    background-color: #c82333; /* Darker on hover */
+}
+
+.response-container {
+    background-color: #6687ff;
+    width: 20%;
+}

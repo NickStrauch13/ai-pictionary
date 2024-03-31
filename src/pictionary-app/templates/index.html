@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pictionary</title>
+    <link rel="icon" href="{{ url_for('static', filename='pencil.ico') }}">
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="timer-container">
+            <span class="timer-prompt">Time Remaining:</span>
+            <span id="timerText">20</span>
+        </div>
+        <div class="main-container">
+            <div id="color-options">
+                <button class="color-option" data-color="#000000" style="background-color: #000000;"></button>
+                <button class="color-option" data-color="#573713" style="background-color: #573713;"></button>
+                <button class="color-option" data-color="#830083" style="background-color: #830083;"></button>
+                <button class="color-option" data-color="#ff0000" style="background-color: #ff0000;"></button>
+                <button class="color-option" data-color="#ff8801" style="background-color: #ff8801;"></button>
+                <button class="color-option" data-color="#ffff00" style="background-color: #ffff00;"></button>
+                <button class="color-option" data-color="#005300" style="background-color: #005300;"></button>
+                <button class="color-option" data-color="#0000ff" style="background-color: #0000ff;"></button>
+                <button class="color-option" data-color="#909090" style="background-color: #909090;"></button>
+                <button class="color-option" data-color="#ffffff" style="background-color: #ffffff;"></button>
+            </div>
+            <div id="grid-container">
+            </div>
+            <div class="button-container">
+                <button id="saveBtn">Submit Sketch</button>
+                <button id="resetBtn">Clear</button>
+            </div>
+        </div>
+        <div class="response-container">
+            <span id="responseText">response</span>
+        </div>
+    </div>
+    <script src="static/js/script.js"></script>
+</body>
+</html>
