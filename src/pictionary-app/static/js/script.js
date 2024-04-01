@@ -196,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.addEventListener('click', () => {
         // Convert the matrix as an image, save to S3 bucket
         //saveMatrixAsImage(currentSubjectIndex);
+        classifyImage();
 
         saveCount++;
         totalSaveCount++;
@@ -210,26 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
             createPopup(); // Display the popup
         }
 
-        // Show and then hide the check mark
-        const checkMark = document.getElementById('checkMark');
-        checkMark.style.display = 'block'; // Make the check mark visible
-        checkMark.style.opacity = 1; // Set opacity to 1 for full visibility
-
-
-        setTimeout(() => {
-            // Start fade out
-            let fadeEffect = setInterval(() => {
-                if (!checkMark.style.opacity) {
-                    checkMark.style.opacity = 1;
-                }
-                if (checkMark.style.opacity > 0) {
-                    checkMark.style.opacity -= 0.1;
-                } else {
-                    clearInterval(fadeEffect);
-                    checkMark.style.display = 'none'; // Hide after fading
-                }
-            }, 50); // Adjust for smoother fade effect
-        }, 1200); // Keep visible for 1200ms before starting to fade
     });
 
 
@@ -305,6 +286,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     createGrid();
+
+
+    async function classifyImage() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = gridSize;
+        canvas.height = gridSize;
+    
+        // Draw the matrix onto the canvas
+        for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+                const [r, g, b] = matrix[row][col];
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+                ctx.fillRect(col, row, 1, 1);
+            }
+        }
+    
+        // Convert the canvas to a Base64-encoded image
+        const imageData = canvas.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/, '');
+    
+        // Send this image data to your Flask `/predict` endpoint
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    image: imageData,
+                    sketchsubject: sketchSubjects[currentSubjectIndex]  // Assuming you want to send this as well
+                })
+            });
+            const data = await response.json();
+            console.log('Prediction result:', data);
+        } catch (error) {
+            console.error('Error in sending the image for classification:', error);
+        }
+    }
+    
+
 
     
 });
