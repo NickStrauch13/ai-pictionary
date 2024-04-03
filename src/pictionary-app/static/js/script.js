@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const colorOptions = document.querySelectorAll('.color-option');
     const resetBtn = document.getElementById('resetBtn');
     const sketchSubjects = ["Airplane", "Bicycle", "Butterfly", "Car", "Flower", "House", "Ladybug", "Train", "Tree", "Whale"];
+    const toggleGraphBtn = document.getElementById('toggleGraphBtn');
+    const graphContainer = document.getElementById('graphContainer');
+    const flipCard = document.querySelector('.flip-card');
+    const timerText = document.getElementById('timerText');
     shuffleArray(sketchSubjects);
     let currentSubjectIndex = 0;
     let saveCount = 0;
@@ -12,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentColor = '#000000'; // Default color
     let isDragging = false;
     let brushSize = 3;
+    let strokesMade = 0;
+    let predictionFreq = 20; // Classify the image every 20 strokes
+    let myChart = null;
+    let timeRemaining = 20;
+    let countdownInitiated = false;
 
     let matrix = Array.from({ length: gridSize }, () =>
     Array.from({ length: gridSize }, () =>
@@ -92,17 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
         activateCell(e.target);
     }
 
-    // function activateCell(cell) {
-    //     if (currentColor === null) {
-    //         currentColor = '#000000';
-    //     }
-    //     const index = parseInt(cell.dataset.index);
-    //     const row = Math.floor(index / gridSize);
-    //     const col = index % gridSize;
-    //     const colorValue = hexToRgb(currentColor);
-    //     matrix[row][col] = [colorValue.r, colorValue.g, colorValue.b];
-    //     cell.style.backgroundColor = currentColor;
-    // }
 
     function activateCell(cell) {
         if (currentColor === null) {
@@ -119,6 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let c = col - offset; c <= col + offset; c++) {
                 updateCell(r, c, colorValue);
             }
+        }
+        strokesMade++;
+        // If strokesMade is a multiple of predictionFreq, classify the image
+        if (strokesMade % predictionFreq === 0)  {
+            classifyImage();
         }
     }
 
@@ -161,8 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSketchSubject() {
-        const sketchSubject = document.getElementById('sketchSubject');
-        //sketchSubject.textContent = sketchSubjects[currentSubjectIndex];
+        const promptText = document.getElementById('promptText');
+        promptText.textContent = sketchSubjects[currentSubjectIndex];
     }
     updateSketchSubject();
 
@@ -270,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-        
     resetBtn.addEventListener('click', clearCanvas);
 
     function clearCanvas() {
@@ -283,11 +285,144 @@ document.addEventListener('DOMContentLoaded', () => {
         cells.forEach(cell => {
             cell.style.backgroundColor = '#f0f0f0'; // Reset cells to white
         });
+        strokesMade = 0;
     }
 
     createGrid();
 
+    // Timer
+    function startCountdown() {
+        const interval = setInterval(() => {
+            timeRemaining -= 1;
+            if (timeRemaining < 10) {
+                timerText.textContent = `00:0${timeRemaining}`;
+            } else {
+                timerText.textContent = `00:${timeRemaining}`;
+            }
+    
+            if (timeRemaining <= 0) {
+                clearInterval(interval);
+            }
+        }, 1000); // Decrease every 1 second
+    }
 
+    // Flip the prompt card
+    flipCard.addEventListener('click', () => {
+        const flipInner = flipCard.querySelector('.flip-card-inner');
+        flipInner.style.transform = flipInner.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+        if (!countdownInitiated){
+            countdownInitiated = true;
+            startCountdown();
+        }
+    });
+
+    // Function to create or update the prediction chart
+    function updateChart(newData) {
+        const predictions = Object.entries(newData).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const labels = predictions.map(([label, _]) => label);
+        const scores = predictions.map(([_, score]) => score);
+    
+        const ctx = document.getElementById('predictionGraph').getContext('2d');
+    
+        if (!myChart) {
+            // Create the chart if it doesn't exist
+            myChart = new Chart(ctx, {
+                type: 'bar', // 'horizontalBar' for older versions of Chart.js
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "",
+                        data: scores,
+                        backgroundColor: 'rgba(74, 224, 74, 0.5)',
+                        borderColor: 'rgba(74, 224, 74, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false 
+                        }
+                    },
+                    indexAxis: 'y', 
+                    scales: {
+                        y: { 
+                            ticks: {
+                                autoSkip: false
+                            }
+                        },
+                        x: { 
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        } else {
+            // Update the chart if it already exists
+            myChart.data.labels = labels;
+            myChart.data.datasets.forEach((dataset) => {
+                dataset.data = scores;
+            });
+            myChart.update();
+        }
+    }
+
+    
+    updateChart({"Airplane":0, "Bicycle":0, "Butterfly":0, "Car":0, "Flower":0}); // Initialize the chart with zero confidence values
+    graphContainer.style.display = 'none';
+
+    toggleGraphBtn.addEventListener('click', () => {
+        if (graphContainer.style.display === 'none') {
+            graphContainer.style.display = 'block';
+            toggleGraphBtn.textContent = 'Hide Graph';
+        } else {
+            graphContainer.style.display = 'none';
+            toggleGraphBtn.textContent = 'Show Graph';
+        }
+    });
+
+
+    // Send image to /predict enpoint
+    async function predictAndDisplayResults(imageData) {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image: imageData,
+                sketchsubject: sketchSubjects[currentSubjectIndex]  // Assuming you want to send this as well
+            })
+        });
+        const data = await response.json();
+        const topPredictionElement = document.getElementById('topPrediction');
+        const topPredictionClassElement = document.getElementById('topPredictionClass');
+        const correctPredictionElement = document.getElementById('correctPredictionClass');
+
+        // Update the prediction text
+        if (strokesMade >= 50 && data.all_predictions[data.predicted_class] > 0.7) {
+            if (data.predicted_class === sketchSubjects[currentSubjectIndex]) {
+                topPredictionElement.textContent = `Oh, I got it! It's`;
+                correctPredictionElement.textContent = `${data.predicted_class}`;
+                topPredictionClassElement.textContent = `🎉🎉🎉`;
+            } else {
+                topPredictionElement.textContent = `Is it`;
+                correctPredictionElement.textContent = ``;
+                topPredictionClassElement.textContent = `${data.predicted_class}?`;
+            }
+        } else {
+            topPredictionElement.textContent = `Hmmm... I'm not sure.`;
+            correctPredictionElement.textContent = ``;
+            topPredictionClassElement.textContent = ``;
+        }
+        
+        console.log('Prediction result:', data);
+
+        updateChart(data.all_predictions);
+    }
+
+
+    // Function to classify the image and display results
     async function classifyImage() {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -308,24 +443,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
         // Send this image data to your Flask `/predict` endpoint
         try {
-            const response = await fetch('/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    image: imageData,
-                    sketchsubject: sketchSubjects[currentSubjectIndex]  // Assuming you want to send this as well
-                })
-            });
-            const data = await response.json();
-            console.log('Prediction result:', data);
+            await predictAndDisplayResults(imageData);      
         } catch (error) {
             console.error('Error in sending the image for classification:', error);
         }
     }
     
-
-
     
 });
