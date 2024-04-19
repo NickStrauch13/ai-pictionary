@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const gridContainer = document.getElementById('grid-container');
-    const saveBtn = document.getElementById('saveBtn');
     const colorOptions = document.querySelectorAll('.color-option');
     const resetBtn = document.getElementById('resetBtn');
     const sketchSubjects = ["Airplane", "Bicycle", "Butterfly", "Car", "Flower", "House", "Ladybug", "Train", "Tree", "Whale"];
@@ -194,27 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
             popup.style.display = 'none';
         });
     }
-
-
-    saveBtn.addEventListener('click', () => {
-        // Convert the matrix as an image, save to S3 bucket
-        //saveMatrixAsImage(currentSubjectIndex);
-        classifyImage();
-
-        saveCount++;
-        totalSaveCount++;
-        if (saveCount >= 5) {
-            saveCount = 0; // Reset counter
-            currentSubjectIndex = (currentSubjectIndex + 1) % sketchSubjects.length; // Cycle through subjects
-            updateSketchSubject(); // Update the subject
-        }
-        clearCanvas();
-
-        if (totalSaveCount === 50) {
-            createPopup(); // Display the popup
-        }
-
-    });
 
 
     // Function to save the matrix as an image

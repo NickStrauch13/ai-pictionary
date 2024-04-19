@@ -26,13 +26,15 @@ body, html {
 
 .flip-card {
     perspective: 1000px;
-    transition: transform 0.3s; 
+    transition: transform 0.3s;
+    width: 65%;
+    height: 20vw; 
 }
 
 .flip-card-inner {
     position: relative;
-    width: 200px;
-    height: 250px;
+    width: 100%;
+    height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.8s;
 }
@@ -78,17 +80,17 @@ body, html {
 }
 
 .prompt-prefix{
-    font-size: 24px;
+    font-size: calc(1vw + 0.5em);
     font-weight: bold;
     color: #ffffff;
     text-align: center;
 }
 
 #promptText {
-    font-size: 40px;
+    font-size: calc(1.6vw + 0.5em);
     font-weight: bold;
     color: #ffeb35;
-    margin-top: 25px;
+    margin-top: 2.5vh;
 }
 
 .timer-container {
@@ -98,17 +100,17 @@ body, html {
     align-items: center;
     justify-content: center;
     color: #ffeb35;
-    font-size: 46px;
+    font-size: calc(2.6vw + 1em);
     font-weight: bold;
-    margin-top: 15px;
+    margin-top: 2vh;
 }
 
 .timer-prompt {
-    font-size: 20px;
+    font-size: calc(1.6vw + 0.5em);
     font-weight: bold;
     color: #ffffff;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 2.5vh;
 }
 
 .main-container {
@@ -117,7 +119,7 @@ body, html {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 10px; /* Reduced padding on smaller screens */
+    padding: 10px; 
     box-sizing: border-box;
     margin: 0;
 }
@@ -127,16 +129,14 @@ body, html {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 15px; /* Slightly reduced margin */
+    margin-bottom: 2vh;
 }
 
 .color-option {
-    width: 3vw; /* Relative width for better scaling */
-    height: 3vw; /* Relative height for better scaling */
-    min-width: 20px; /* Minimum size for touch targets */
-    min-height: 20px; /* Minimum size for touch targets */
-    margin: 3px; /* Adjusted margin */
-    border: 2px solid #ffffff;
+    width: 3vw; 
+    height: 3vw; 
+    margin: 0.25vw; /* Adjusted margin */
+    border: 0.15vw solid #ffffff;
     border-radius: 20%;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -155,10 +155,8 @@ body, html {
     background-color: #e0e0e0; /* Light grey, matching the gap color */
     width: 40vw; /* Increased to use more of the viewport width */
     height: 40vw; /* Keep the grid square */
-    max-width: 600px;
-    max-height: 600px;
     overflow: hidden;
-    margin-bottom: 15px;
+    margin-bottom: 2vh;
     border: #8c8c8c solid 3px;
     box-shadow: 0 16px 32px rgba(0,0,0,0.7);
 }
@@ -176,31 +174,15 @@ body, html {
     justify-content: center;
     width: 20vw;
     /* Space all children elelments horizontally evenly */
-    gap: 10px;
-    margin-top: 15px;
-}
-
-/* Style the save button */
-#saveBtn {
-    padding: 8px 16px; /* Adjusted padding */
-    font-size: 14px; /* Adjusted font size */
-    color: #ffffff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#saveBtn:hover {
-    background-color: #0056b3;
+    gap: 1.5vw;
+    margin-top: 2vh;
 }
 
 #resetBtn {
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: 1vh 1vw; /* Adjusted to scale with the viewport */
+    font-size: calc(0.6vw + 0.5em); /* Scales with viewport width but has a minimum size */
     color: #ffffff;
-    background-color: #dc3545; /* Bootstrap danger color for contrast */
+    background-color: #dc3545; 
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -208,7 +190,7 @@ body, html {
 }
 
 #resetBtn:hover {
-    background-color: #c82333; /* Darker on hover */
+    background-color: #c82333; 
 }
 
 .response-container {
@@ -227,19 +209,21 @@ body, html {
     align-items: center;
     justify-content: center;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 2.5vh;
 }
 
 .graph-toggle-button {
-    padding: 4px 8px; /* Adjusted padding */
-    font-size: 14px; /* Adjusted font size */
+    padding: 1vh 1vw; /* Adjusted to scale with the viewport */
+    font-size: calc(0.6vw + 0.5em);
+    padding: 1vh 1vw;
+    font-size: calc(0.5vw + 0.5em);
     color: #ffffff;
     background-color: #18a22b;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-bottom: 10px;
+    margin-bottom: 1vh;
 }
 
 .graph-toggle-button:hover {
@@ -253,7 +237,7 @@ body, html {
 .prediction-graph {
     background-color: #cce8ff;
     width: 100%;
-    border-radius: 15px;
+    border-radius: 1vw;
 }
 
 .robot-and-response-container {
@@ -264,24 +248,24 @@ body, html {
     text-align: center;
     width: 100%;
     color: #ffffff;
-    font-size: 24px;
+    font-size: calc(1.0vw + 0.5em);
 }
 
 .top-prediction-class {
-    font-size: 36px;
+    font-size: calc(1.6vw + 0.6em);
     font-weight: bold;
     color:#ffffff;
 }
 
 .correct-prediction-class {
-    font-size: 36px;
+    font-size: calc(1.6vw + 0.6em);
     font-weight: bold;
     color:#ffeb35;
 }
 
 .robot-icon {
     font-size: 12vw;
-    margin-bottom: 20px;
+    margin-bottom: 2.5vh;
     color: #ffffff;
 }
 
