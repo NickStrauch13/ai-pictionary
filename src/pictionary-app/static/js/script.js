@@ -17,9 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let brushSize = 3;
     let strokesMade = 0;
     let predictionFreq = 20; // Classify the image every 20 strokes
+    let minStrokesForPred = 75; // Minimum strokes before showing prediction
+    let drawingEnabled = false;
+    let popupShown = false;
     let myChart = null;
     let timeRemaining = 20;
     let countdownInitiated = false;
+    let totalScore = 0;
 
     let matrix = Array.from({ length: gridSize }, () =>
     Array.from({ length: gridSize }, () =>
@@ -102,25 +106,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function activateCell(cell) {
-        if (currentColor === null) {
-            currentColor = '#000000';
-        }
-        const index = parseInt(cell.dataset.index);
-        const row = Math.floor(index / gridSize);
-        const col = index % gridSize;
-        const colorValue = hexToRgb(currentColor);
-
-        // Adjust this loop according to the current brushSize
-        const offset = Math.floor(brushSize / 2); // Calculate offset for larger brush sizes
-        for (let r = row - offset; r <= row + offset; r++) {
-            for (let c = col - offset; c <= col + offset; c++) {
-                updateCell(r, c, colorValue);
+        if (drawingEnabled) {
+            if (currentColor === null) {
+                currentColor = '#000000';
             }
-        }
-        strokesMade++;
-        // If strokesMade is a multiple of predictionFreq, classify the image
-        if (strokesMade % predictionFreq === 0)  {
-            classifyImage();
+            const index = parseInt(cell.dataset.index);
+            const row = Math.floor(index / gridSize);
+            const col = index % gridSize;
+            const colorValue = hexToRgb(currentColor);
+
+            // Adjust this loop according to the current brushSize
+            const offset = Math.floor(brushSize / 2); // Calculate offset for larger brush sizes
+            for (let r = row - offset; r <= row + offset; r++) {
+                for (let c = col - offset; c <= col + offset; c++) {
+                    updateCell(r, c, colorValue);
+                }
+            }
+            strokesMade++;
+            // If strokesMade is a multiple of predictionFreq, classify the image
+            if (strokesMade % predictionFreq === 0)  {
+                classifyImage();
+            }
         }
     }
 
@@ -168,30 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateSketchSubject();
 
+
     function createPopup() {
         const popup = document.createElement('div');
         popup.id = 'popup';
+        popup.textContent = "Correct! Well done.";
         popup.style.position = 'fixed';
         popup.style.top = '50%';
         popup.style.left = '50%';
         popup.style.transform = 'translate(-50%, -50%)';
-        popup.style.backgroundColor = '#f8f9fa'; // Light background color for contrast
+        popup.style.backgroundColor = 'lightgray';
         popup.style.padding = '20px';
         popup.style.zIndex = '1000';
-        popup.style.border = '2px solid #302e52'; // Main color theme for border
-        popup.style.borderRadius = '10px'; // Rounded corners
-        popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // More pronounced shadow for depth
-        popup.innerHTML = `
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
-                <button id="closePopup" style="background-color: #302e52; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px;">X</button>
-            </div>
-            <p style="color: #333; font-size: 20px; font-weight: bold; line-height: 1.5;">Thank you for helping me collect data! I really appreciate your time. If you want to continue drawing, you can close this window and continue.</p>
-        `;
         document.body.appendChild(popup);
-    
-        document.getElementById('closePopup').addEventListener('click', function() {
-            popup.style.display = 'none';
-        });
+        return popup;
     }
 
 
@@ -258,39 +254,56 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear the matrix
         matrix = Array.from({ length: gridSize }, () =>
             Array.from({ length: gridSize }, () =>
-                [255, 255, 255])); // Reset to white or your default grid color
+                [255, 255, 255])); // Reset to default grid color
         // Reset the visual grid
         cells.forEach(cell => {
             cell.style.backgroundColor = '#f0f0f0'; // Reset cells to white
         });
         strokesMade = 0;
+        classifyImage();
+        setTimeout(() => {
+            updateChart({"Airplane":0, "Bicycle":0, "Butterfly":0, "Car":0, "Flower":0});
+        }, 250);
     }
 
     createGrid();
 
     // Timer
-    function startCountdown() {
-        const interval = setInterval(() => {
-            timeRemaining -= 1;
-            if (timeRemaining < 10) {
-                timerText.textContent = `00:0${timeRemaining}`;
-            } else {
-                timerText.textContent = `00:${timeRemaining}`;
-            }
-    
-            if (timeRemaining <= 0) {
-                clearInterval(interval);
-            }
-        }, 1000); // Decrease every 1 second
+    function toggleTimer() {
+        // If a timer is already running, stop it
+        if (window.countdownInterval) {
+            clearInterval(window.countdownInterval);
+            window.countdownInterval = null;
+            timerText.textContent = `00:${timeRemaining}`;
+        } else {
+            // Start a new timer if none is running
+            window.countdownInterval = setInterval(() => {
+                timeRemaining -= 1;
+                if (timeRemaining < 10) {
+                    timerText.textContent = `00:0${timeRemaining}`;
+                } else {
+                    timerText.textContent = `00:${timeRemaining}`;
+                }
+        
+                if (timeRemaining <= 0) {
+                    clearInterval(window.countdownInterval);
+                    window.countdownInterval = null;
+                    // Add time out logic
+                }
+            }, 1000);
+        }
     }
 
-    // Flip the prompt card
+    // Flip the prompt card 
     flipCard.addEventListener('click', () => {
         const flipInner = flipCard.querySelector('.flip-card-inner');
         flipInner.style.transform = flipInner.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)';
         if (!countdownInitiated){
             countdownInitiated = true;
-            startCountdown();
+            toggleTimer();
+        }
+        if (!drawingEnabled && !popupShown) {
+            drawingEnabled = true;
         }
     });
 
@@ -378,11 +391,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const correctPredictionElement = document.getElementById('correctPredictionClass');
 
         // Update the prediction text
-        if (strokesMade >= 50 && data.all_predictions[data.predicted_class] > 0.7) {
+        if (strokesMade >= minStrokesForPred && data.all_predictions[data.predicted_class] > 0.7) {
             if (data.predicted_class === sketchSubjects[currentSubjectIndex]) {
                 topPredictionElement.textContent = `Oh, I got it! It's`;
                 correctPredictionElement.textContent = `${data.predicted_class}`;
                 topPredictionClassElement.textContent = `🎉🎉🎉`;
+                showCorrectPredictionPopup();
             } else {
                 topPredictionElement.textContent = `Is it`;
                 correctPredictionElement.textContent = ``;
@@ -394,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
             topPredictionClassElement.textContent = ``;
         }
         
-        console.log('Prediction result:', data);
+        //console.log('Prediction result:', data);
 
         updateChart(data.all_predictions);
     }
@@ -427,5 +441,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+
+    function showCorrectPredictionPopup() {
+        const popup = createPopup(); // Make sure this function returns the popup element
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.addEventListener('click', handleNextSubject);
+        popup.appendChild(nextButton);
+        toggleTimer();
+        countdownInitiated = false;
+        totalScore += (timeRemaining * 10);
+        popupShown = true;
+        drawingEnabled = false;
+
+        console.log(totalScore);
+    }
+
+
+    function handleNextSubject() {
+        currentSubjectIndex = (currentSubjectIndex + 1) % sketchSubjects.length;
+        clearCanvas();
+        resetTimer();
+        flipCard.click(); 
+        toggleTimer();
+        countdownInitiated = false;
+        // Remove all popup elements
+        document.getElementById('popup').remove(); 
+        popupShown = false;
+        //sleep for .5 seconds before advancing
+        setTimeout(() => {
+            updateSketchSubject();
+        }, 500);
+    }
+
+    function resetTimer() {
+        timeRemaining = 20; 
+        timerText.textContent = `00:${timeRemaining}`;
+    }
     
 });

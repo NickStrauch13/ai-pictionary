@@ -179,8 +179,8 @@ body, html {
 }
 
 #resetBtn {
-    padding: 1vh 1vw; /* Adjusted to scale with the viewport */
-    font-size: calc(0.6vw + 0.5em); /* Scales with viewport width but has a minimum size */
+    padding: 1vh 1vw; 
+    font-size: calc(0.6vw + 0.5em); 
     color: #ffffff;
     background-color: #dc3545; 
     border: none;
@@ -212,9 +212,7 @@ body, html {
     margin-bottom: 2.5vh;
 }
 
-.graph-toggle-button {
-    padding: 1vh 1vw; /* Adjusted to scale with the viewport */
-    font-size: calc(0.6vw + 0.5em);
+/* .graph-toggle-button {
     padding: 1vh 1vw;
     font-size: calc(0.5vw + 0.5em);
     color: #ffffff;
@@ -228,6 +226,81 @@ body, html {
 
 .graph-toggle-button:hover {
     background-color: #12761f;
+} */
+
+/* CSS */
+.graph-toggle-button {
+    padding: 1vh 1vw;
+    font-size: calc(0.5vw + 0.5em);
+    border: none;
+    outline: none;
+    color: rgb(255, 255, 255);
+    background: #111;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    margin-bottom: 1vh;
+}
+
+.graph-toggle-button:before {
+    content: "";
+    background: linear-gradient(
+        45deg,
+        #ff0000,
+        #ff7300,
+        #fffb00,
+        #48ff00,
+        #00ffd5,
+        #002bff,
+        #7a00ff,
+        #ff00c8,
+        #ff0000
+    );
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+    width: calc(100% + 0px);
+    height: calc(100% + 0px);
+    border-radius: 10px;
+    opacity: 0; 
+    transition: opacity 0.3s ease-in-out; 
+}
+
+.graph-toggle-button:hover:before {
+    opacity: 1;
+    animation: graph-toggle-button 20s linear infinite;
+}
+
+.graph-toggle-button:after {
+    z-index: -1;
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #222;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+@keyframes graph-toggle-button {
+    0% {
+        background-position: 0 0;
+    }
+    50% {
+        background-position: 400% 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
 }
 
 .graph-container {
@@ -268,5 +341,4 @@ body, html {
     margin-bottom: 2.5vh;
     color: #ffffff;
 }
-
 
