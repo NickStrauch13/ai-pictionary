@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sketchSubjects = ["Airplane", "Bicycle", "Butterfly", "Car", "Flower", "House", "Ladybug", "Train", "Tree", "Whale"];
     const toggleGraphBtn = document.getElementById('toggleGraphBtn');
     const graphContainer = document.getElementById('graphContainer');
+    graphContainer.style.display = 'none';
     const flipCard = document.querySelector('.flip-card');
     const timerText = document.getElementById('timerText');
     shuffleArray(sketchSubjects);
@@ -16,14 +17,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDragging = false;
     let brushSize = 3;
     let strokesMade = 0;
+    let predThreshold = 0.70; 
     let predictionFreq = 20; // Classify the image every 20 strokes
-    let minStrokesForPred = 75; // Minimum strokes before showing prediction
+    let minStrokesForThink = 50; // Minimum strokes before showing thinking message
+    let minStrokesForPred = 100; // Minimum strokes before showing prediction
     let drawingEnabled = false;
     let popupShown = false;
     let myChart = null;
     let timeRemaining = 20;
     let countdownInitiated = false;
+    let currentScore = 0;
     let totalScore = 0;
+    let drawingsCompleted = 0;
+    let drawingsNeeded = 4;
+    let imageSaveNames = [];
 
     let matrix = Array.from({ length: gridSize }, () =>
     Array.from({ length: gridSize }, () =>
@@ -175,21 +182,43 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSketchSubject();
 
 
-    function createPopup() {
+    async function createPopup() {
+        // Create the popup element
         const popup = document.createElement('div');
         popup.id = 'popup';
-        popup.textContent = "Correct! Well done.";
-        popup.style.position = 'fixed';
-        popup.style.top = '50%';
-        popup.style.left = '50%';
-        popup.style.transform = 'translate(-50%, -50%)';
-        popup.style.backgroundColor = 'lightgray';
-        popup.style.padding = '20px';
-        popup.style.zIndex = '1000';
-        document.body.appendChild(popup);
+        popup.className = "popup";
+
+        // Create score element
+        const scoreText = document.createElement('p');
+        scoreText.className = "popup-score";
+        currentScore = timeRemaining * 10;
+        scoreText.textContent = `Score: ${currentScore}`;
+
+        // Message, Score, and Close Button
+        const message = document.createElement('p');
+        message.className = "popup-message"
+        popup.appendChild(message);
+        popup.appendChild(scoreText);
+        const closeButton = document.createElement('button');
+        if (timeRemaining > 0) {
+            message.textContent = "Correct! Well done.";
+            closeButton.className = "popup-close-button";
+        } else {
+            message.textContent = "Oops! You were too slow.";
+            closeButton.className = "popup-fail-close-button";
+        }
+        closeButton.textContent = 'Next';
+        closeButton.addEventListener('click', handleNextSubject);
+        popup.appendChild(closeButton);
+    
+        document.body.appendChild(popup);  
+
+        const response = await saveMatrixAsImage(currentSubjectIndex);
+        imageSaveNames.push(response.filename);
+
         return popup;
     }
-
+    
 
     // Function to save the matrix as an image
     async function saveMatrixAsImage(immediateSubjectIndex) {
@@ -207,45 +236,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     
-        canvas.toBlob(async (blob) => {
-            // Get the current sketch subject and generate a unique filename
-            const sketchSubject = sketchSubjects[immediateSubjectIndex];
-            const uniqueSequence = Date.now(); 
-            const fileName = `${sketchSubject}_${uniqueSequence}.png`;
+        // Get the data URL from the canvas
+        var dataUrl = canvas.toDataURL('image/png');
     
-            try {
-                // Fetch the presigned URL from your server, including the dynamic filename in the request
-                const response = await fetch('/generate-presigned-url', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ filename: fileName,
-                                           sketchsubject: sketchSubject})
-                });
-                const data = await response.json();
+        // Extract the data part of the URL
+        const data = dataUrl.replace(/^data:image\/png;base64,/, '');
     
-                // Use the presigned URL to upload the image
-                const uploadResponse = await fetch(data.url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'image/png'
-                    },
-                    body: blob
-                });
-    
-                if (uploadResponse.ok) {
-                    console.log('Upload successful');
-                } else {
-                    console.log(uploadResponse)
-                    console.error('Upload failed');
-                }
-            } catch (error) {
-                console.error('Error generating presigned URL or uploading:', error);
-            }
-        }, 'image/png');
-    }
-
+        // Send the image data to the Flask server
+        try {
+            const response = await fetch('/save_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    image_data: data,
+                    sketch_subject: sketchSubjects[immediateSubjectIndex]
+                })
+            });
+            const responseData = await response.json(); // Assuming the server responds with JSON
+            return responseData; // Return the response data from the function
+        } catch (error) {
+            console.error('Error saving the image:', error);
+            throw error; // Rethrow or handle error appropriately
+        }
+    }    
 
     resetBtn.addEventListener('click', clearCanvas);
 
@@ -281,14 +296,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 timeRemaining -= 1;
                 if (timeRemaining < 10) {
                     timerText.textContent = `00:0${timeRemaining}`;
-                } else {
+                } else{
                     timerText.textContent = `00:${timeRemaining}`;
                 }
         
                 if (timeRemaining <= 0) {
                     clearInterval(window.countdownInterval);
                     window.countdownInterval = null;
+                    countdownInitiated = false;
+                    currentScore = timeRemaining * 10;
+                    totalScore += currentScore;
+                    popupShown = true;
+                    drawingEnabled = false;
+                    drawingsCompleted++;
                     // Add time out logic
+                    if (drawingsCompleted < drawingsNeeded) {
+                        createPopup();
+                    } else {
+                        finishGame();
+                    }
                 }
             }, 1000);
         }
@@ -310,6 +336,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to create or update the prediction chart
     function updateChart(newData) {
         const predictions = Object.entries(newData).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        // If strokesMade is less than minStrokesForPred, Scale each prediction down
+        if (strokesMade < minStrokesForPred) {
+            predictions.forEach((prediction) => {
+                prediction[1] = prediction[1] * (strokesMade / minStrokesForPred);
+            });
+        }
         const labels = predictions.map(([label, _]) => label);
         const scores = predictions.map(([_, score]) => score);
     
@@ -343,7 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         },
                         x: { 
-                            beginAtZero: true
+                            beginAtZero: true,
+                            suggestedMax: 1,
+                            max: 1
                         }
                     }
                 }
@@ -365,10 +399,10 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleGraphBtn.addEventListener('click', () => {
         if (graphContainer.style.display === 'none') {
             graphContainer.style.display = 'block';
-            toggleGraphBtn.textContent = 'Hide Graph';
+            toggleGraphBtn.textContent = 'Hide Insights';
         } else {
             graphContainer.style.display = 'none';
-            toggleGraphBtn.textContent = 'Show Graph';
+            toggleGraphBtn.textContent = 'View Insights';
         }
     });
 
@@ -391,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const correctPredictionElement = document.getElementById('correctPredictionClass');
 
         // Update the prediction text
-        if (strokesMade >= minStrokesForPred && data.all_predictions[data.predicted_class] > 0.7) {
+        if (strokesMade >= minStrokesForPred && data.all_predictions[data.predicted_class] > predThreshold) {
             if (data.predicted_class === sketchSubjects[currentSubjectIndex]) {
                 topPredictionElement.textContent = `Oh, I got it! It's`;
                 correctPredictionElement.textContent = `${data.predicted_class}`;
@@ -402,6 +436,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 correctPredictionElement.textContent = ``;
                 topPredictionClassElement.textContent = `${data.predicted_class}?`;
             }
+        } else if (strokesMade >= minStrokesForThink && strokesMade < minStrokesForPred) {
+            topPredictionElement.textContent = `Let me think...`;
+            correctPredictionElement.textContent = ``;
+            topPredictionClassElement.textContent = ``;
         } else {
             topPredictionElement.textContent = `Hmmm... I'm not sure.`;
             correctPredictionElement.textContent = ``;
@@ -433,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Convert the canvas to a Base64-encoded image
         const imageData = canvas.toDataURL('image/png').replace(/^data:image\/(png|jpg);base64,/, '');
     
-        // Send this image data to your Flask `/predict` endpoint
+        // Send this image data to Flask `/predict` endpoint
         try {
             await predictAndDisplayResults(imageData);      
         } catch (error) {
@@ -443,18 +481,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
     function showCorrectPredictionPopup() {
-        const popup = createPopup(); // Make sure this function returns the popup element
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Next';
-        nextButton.addEventListener('click', handleNextSubject);
-        popup.appendChild(nextButton);
+        drawingsCompleted++;
+        if (drawingsCompleted < drawingsNeeded) {
+            createPopup();
+        } else {
+            finishGame();
+        }
         toggleTimer();
         countdownInitiated = false;
-        totalScore += (timeRemaining * 10);
+        totalScore += currentScore;
         popupShown = true;
         drawingEnabled = false;
-
-        console.log(totalScore);
     }
 
 
@@ -478,5 +515,48 @@ document.addEventListener('DOMContentLoaded', () => {
         timeRemaining = 20; 
         timerText.textContent = `00:${timeRemaining}`;
     }
-    
+
+    async function finishGame() {
+        // Save the last image
+        const response = await saveMatrixAsImage(currentSubjectIndex);
+        imageSaveNames.push(response.filename);
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+
+        // Create content div
+        const content = document.createElement('div');
+        content.className = 'content';
+
+        // Setting up a container div for images
+        const imagesContainer = document.createElement('div');
+        imagesContainer.className = 'final-images-container'
+
+        // Array of image names assuming you know them, or they are statically named.
+        imageSaveNames.forEach(name => {
+            const img = document.createElement('img');
+            img.src = `./static/images/${name}`;
+            img.style.width = '100%';  // Each image will fill the cell
+            img.style.height = 'auto';
+            imagesContainer.appendChild(img);
+        });
+
+        // Append imagesContainer to content
+        content.appendChild(imagesContainer);
+
+        // Append content to overlay
+        overlay.appendChild(content);
+
+        // Add close functionality
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) { // Close only if the overlay background is clicked
+                document.body.removeChild(overlay);
+            }
+        });
+
+        // Append overlay to body
+        document.body.appendChild(overlay);
+    }
+
 });

@@ -190,7 +190,7 @@ body, html {
 }
 
 #resetBtn:hover {
-    background-color: #c82333; 
+    background-color: #a81221; 
 }
 
 .response-container {
@@ -276,7 +276,7 @@ body, html {
 
 .graph-toggle-button:hover:before {
     opacity: 1;
-    animation: graph-toggle-button 20s linear infinite;
+    animation: button-animation 20s linear infinite;
 }
 
 .graph-toggle-button:after {
@@ -291,7 +291,7 @@ body, html {
     border-radius: 10px;
 }
 
-@keyframes graph-toggle-button {
+@keyframes button-animation {
     0% {
         background-position: 0 0;
     }
@@ -302,6 +302,7 @@ body, html {
         background-position: 0 0;
     }
 }
+
 
 .graph-container {
     width: 100%;
@@ -342,3 +343,91 @@ body, html {
     color: #ffffff;
 }
 
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #302e52; 
+    padding: 4vw; 
+    z-index: 1000;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 20vw; 
+    text-align: center;
+    border: 2px solid #ffffff; 
+    font-size: calc(1.0vw + 0.5em); 
+    font-family: Arial, sans-serif; 
+    color: #ffffff; 
+    opacity: 95%;
+}
+
+.popup-message {
+    margin-bottom: 2vh;
+}
+
+.popup-score {
+    font-size: calc(0.5vw + 0.5em);
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 2vh;
+
+}
+
+.popup-close-button {
+    padding: 10px 20px;
+    font-size: calc(0.5vw + 0.5em);
+    background-color: #4CAF50; 
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.popup-close-button:hover {
+    background-color: #47bb4d; 
+}
+
+.popup-fail-close-button {
+    padding: 10px 20px;
+    font-size: calc(0.5vw + 0.5em);
+    background-color: #ff1414; 
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.popup-fail-close-button:hover {
+    background-color: #bc0505; 
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;   
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; 
+}
+
+.content {
+    width: 50%; 
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.final-images-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    grid-gap: 10px; 
+    justify-items: center;
+    align-items: center;
+    max-width: 100%; 
+}

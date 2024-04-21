@@ -3,6 +3,7 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 import base64
 import os
+import time
 from io import BytesIO
 from PIL import Image
 import torch
@@ -16,6 +17,10 @@ model, device, input_transform = load_model()
 
 @app.route('/')
 def index():
+    # Delete all pngs in the static/images directory
+    for file in os.listdir('./static/images'):
+        if file.endswith('.png'):
+            os.remove(f"./static/images/{file}")
     return render_template('index.html')
 
 
@@ -40,8 +45,6 @@ def predict():
         classes_and_scores[key] = output[0][i].item()
     predicted_class = list(label_map.keys())[list(label_map.values()).index(predicted.item())]
     return jsonify({'predicted_class': predicted_class, 'target': subject, 'all_predictions': classes_and_scores})
-    # ...
-
 
 
 @app.route('/generate-presigned-url', methods=['POST'])
@@ -61,11 +64,22 @@ def generate_presigned_url():
         return jsonify({'url': presigned_url})
     except NoCredentialsError:
         return jsonify({'error': 'Credentials not available'}), 403
+    
+
+@app.route('/save_image', methods=['POST'])
+def save_image():
+    print("TRYING TO SAVE")
+    data = request.get_json()
+    image_data = data['image_data']
+    sketch_subject = data['sketch_subject']
+    filename = f"{sketch_subject}_{int(time.time())}.png"
+
+    # Convert the base64 string to an actual image
+    image = Image.open(BytesIO(base64.b64decode(image_data)))
+    image.save(f"./static/images/{filename}")
+
+    return jsonify({'filename': filename})
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-# Things to add:
-    # unkown class
-    # "helpful tips": "Hint: The object of the game is to score as many points as possible." "Hint: Make your drawings better." 
