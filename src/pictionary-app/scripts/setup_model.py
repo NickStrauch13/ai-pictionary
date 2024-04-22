@@ -11,10 +11,16 @@ def load_model():
         model: torch model
         device: torch device
         base_transform: torchvision transform
+        normalize_transform: torchvision transform
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     base_transform = transforms.Compose([
                     transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.485, 0.456, 0.406],
+                        std=[0.229, 0.224, 0.225])
+                    ])
+    normalize_transform = transforms.Compose([
                     transforms.Normalize(
                         mean=[0.485, 0.456, 0.406],
                         std=[0.229, 0.224, 0.225])
@@ -30,4 +36,4 @@ def load_model():
     model = model.to(device)
     model.load_state_dict(torch.load("./models/TL_resnet18.pth", map_location=device))
     model.eval()
-    return model, device, base_transform
+    return model, device, base_transform, normalize_transform

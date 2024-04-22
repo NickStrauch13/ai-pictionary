@@ -5,3 +5,4 @@ flask==3.0.2
 pillow==10.2.0
 torch==2.2.1
 torchvision==0.17.1
+matplotlib==3.8.4

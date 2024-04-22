@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({
                 image: imageData,
-                sketchsubject: sketchSubjects[currentSubjectIndex]  // Assuming you want to send this as well
+                sketchsubject: sketchSubjects[currentSubjectIndex] 
             })
         });
         const data = await response.json();
@@ -525,21 +525,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlay = document.createElement('div');
         overlay.className = 'overlay';
 
+        // Add title, final score, and instructions
+        const overlayTextContainer = document.createElement('div');
+        overlayTextContainer.className = 'overlay-text-container';
+        overlay.appendChild(overlayTextContainer);
+        const overlayTitle = document.createElement('h1');
+        overlayTitle.className = 'overlay-title';
+        overlayTitle.textContent = 'Game Over!';
+        overlayTextContainer.appendChild(overlayTitle);
+        const overlayScore = document.createElement('p');
+        overlayScore.className = 'overlay-score';
+        overlayScore.textContent = `Final Score: ${totalScore}`;
+        overlayTextContainer.appendChild(overlayScore);
+        const overlayInstructions = document.createElement('p');
+        overlayInstructions.className = 'overlay-instructions';
+        overlayInstructions.textContent = '(Click on an image to see model insights)';
+        overlayTextContainer.appendChild(overlayInstructions);
+
         // Create content div
         const content = document.createElement('div');
-        content.className = 'content';
+        content.className = 'overlay-content';
 
         // Setting up a container div for images
         const imagesContainer = document.createElement('div');
-        imagesContainer.className = 'final-images-container'
+        imagesContainer.className = 'final-images-container';
 
-        // Array of image names assuming you know them, or they are statically named.
+        // Array of image names 
         imageSaveNames.forEach(name => {
             const img = document.createElement('img');
+            const imgSubContainer = document.createElement('div');
+            imgSubContainer.className = 'final-image-sub-container';
+            img.className = 'final-image';
             img.src = `./static/images/${name}`;
-            img.style.width = '100%';  // Each image will fill the cell
-            img.style.height = 'auto';
-            imagesContainer.appendChild(img);
+            img.id = `./static/images/${name}`;
+
+            img.addEventListener('click', () => {
+                fetchInsight(img.id);
+            });
+
+            imgSubContainer.appendChild(img);
+            imagesContainer.appendChild(imgSubContainer);
         });
 
         // Append imagesContainer to content
@@ -547,8 +572,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Append content to overlay
         overlay.appendChild(content);
-
-        // Add close functionality
+        
+        //Close
         overlay.addEventListener('click', function(e) {
             if (e.target === overlay) { // Close only if the overlay background is clicked
                 document.body.removeChild(overlay);
@@ -557,6 +582,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Append overlay to body
         document.body.appendChild(overlay);
+    }
+
+    async function fetchInsight(imagePath) {
+        const response = await fetch('/create_important_pixel_plots', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image_path: imagePath,
+                sketch_subject: sketchSubjects[currentSubjectIndex],
+                num_plots: 20
+            })
+        });
+        const data = await response.json();
+        const filepaths = data.filenames;
+        
     }
 
 });

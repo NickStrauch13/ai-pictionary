@@ -8,11 +8,12 @@ from io import BytesIO
 from PIL import Image
 import torch
 from scripts.setup_model import load_model
+from scripts.pixel_importance import save_n_pixel_importance_images
 
 
 app = Flask(__name__)
 label_map = {"Airplane": 0, "Bicycle": 1, "Butterfly": 2, "Car": 3, "Flower": 4, "House": 5, "Ladybug": 6, "Train": 7, "Tree": 8, "Whale": 9}
-model, device, input_transform = load_model()
+model, device, input_transform, normalize_transform = load_model()
 
 
 @app.route('/')
@@ -79,6 +80,17 @@ def save_image():
     image.save(f"./static/images/{filename}")
 
     return jsonify({'filename': filename})
+
+
+@app.route('/create_important_pixel_plots', methods=['POST'])
+def create_important_pixel_plots():
+    data = request.get_json()
+    image_path = data['image_path']
+    target_class = data['sketch_subject']
+    num_plots = data['num_plots']
+    image = Image.open(image_path).convert("RGB")
+    filenames = save_n_pixel_importance_images(model, image, label_map[target_class], normalize_transform, num_plots)
+    return jsonify({'filenames': filenames})
 
 
 if __name__ == '__main__':
