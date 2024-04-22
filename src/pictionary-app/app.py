@@ -9,6 +9,7 @@ from PIL import Image
 import torch
 from scripts.setup_model import load_model
 from scripts.pixel_importance import save_n_pixel_importance_images
+from scripts.feature_maps import create_feature_map_plot
 
 
 app = Flask(__name__)
@@ -90,7 +91,20 @@ def create_important_pixel_plots():
     num_plots = data['num_plots']
     image = Image.open(image_path).convert("RGB")
     filenames = save_n_pixel_importance_images(model, image, label_map[target_class], normalize_transform, num_plots)
-    return jsonify({'filenames': filenames})
+    return jsonify({'filepaths': filenames})
+
+
+@app.route('/create_feature_maps', methods=['POST'])
+def create_feature_maps():
+    data = request.get_json()
+    image_path = data['image_path']
+    layer_name = data['layer_name']
+    k = data['k']
+    image = Image.open(image_path).convert("RGB")
+    image = input_transform(image).unsqueeze(0).to(device)
+    filepath = "./static/images/feature_maps.png"
+    create_feature_map_plot(model, image, layer_name, filepath=filepath, k=k)
+    return jsonify({'filepath': filepath})
 
 
 if __name__ == '__main__':

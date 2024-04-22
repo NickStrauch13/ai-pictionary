@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Set the backend before importing pyplot
 import matplotlib.pyplot as plt
 from torchvision import transforms
 from PIL import Image
@@ -103,7 +105,7 @@ def plot_important_pixels_only(original_image, important_pixel_groups, image_siz
                 # Make sure we don't go out of bounds
                 if i+dx < image_size[1] and j+dy < image_size[0]:
                     if highlight and original_image[i+dx, j+dy].all() == 1:
-                        new_image_array[i+dx, j+dy] = 200
+                        new_image_array[i+dx, j+dy] = 240
                     else:
                         new_image_array[i+dx, j+dy] = original_image[i+dx, j+dy]
 
@@ -115,3 +117,5 @@ def plot_important_pixels_only(original_image, important_pixel_groups, image_siz
     plt.imshow(new_image)
     plt.axis('off') 
     plt.savefig(filename)
+    plt.clf()
+    plt.close()

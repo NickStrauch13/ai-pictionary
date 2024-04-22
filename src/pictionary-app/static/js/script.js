@@ -192,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const scoreText = document.createElement('p');
         scoreText.className = "popup-score";
         currentScore = timeRemaining * 10;
+        totalScore += currentScore;
         scoreText.textContent = `Score: ${currentScore}`;
 
         // Message, Score, and Close Button
@@ -489,7 +490,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         toggleTimer();
         countdownInitiated = false;
-        totalScore += currentScore;
         popupShown = true;
         drawingEnabled = false;
     }
@@ -517,6 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function finishGame() {
+        // Update final score
+        currentScore = timeRemaining * 10;
+        totalScore += currentScore;
+
         // Save the last image
         const response = await saveMatrixAsImage(currentSubjectIndex);
         imageSaveNames.push(response.filename);
@@ -570,21 +574,38 @@ document.addEventListener('DOMContentLoaded', () => {
         // Append imagesContainer to content
         content.appendChild(imagesContainer);
 
+        // Add reset game button which closes overlay and called / endpoint
+        const resetGameButton = document.createElement('button');
+        resetGameButton.className = 'reset-game-button';
+        resetGameButton.textContent = 'Play Again';
+        resetGameButton.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            window.location.href = '/';
+        });
+
         // Append content to overlay
         overlay.appendChild(content);
         
-        //Close
-        overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) { // Close only if the overlay background is clicked
-                document.body.removeChild(overlay);
-            }
-        });
+        // Append resetGameButton to overlay
+        overlay.appendChild(resetGameButton);
 
         // Append overlay to body
         document.body.appendChild(overlay);
     }
 
     async function fetchInsight(imagePath) {
+        // Create insight overlay before fetching data
+        const insightOverlay = document.createElement('div');
+        insightOverlay.className = 'insight-overlay';
+        document.body.appendChild(insightOverlay);
+        const insightMainContiner = document.createElement('div');
+        insightMainContiner.className = 'insight-main-container';
+        insightOverlay.appendChild(insightMainContiner);
+
+        const insightLoader = document.createElement('div');
+        insightLoader.className = 'insight-loader';
+        insightMainContiner.appendChild(insightLoader);
+
         const response = await fetch('/create_important_pixel_plots', {
             method: 'POST',
             headers: {
@@ -593,12 +614,92 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({
                 image_path: imagePath,
                 sketch_subject: sketchSubjects[currentSubjectIndex],
-                num_plots: 20
+                num_plots: 32
             })
         });
         const data = await response.json();
-        const filepaths = data.filenames;
+        const filepaths = data.filepaths;
+        console.log(filepaths);
         
+        const response2 = await fetch('/create_feature_maps', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image_path: imagePath,
+                layer_name: 'layer1',
+                k: 4
+            })
+        });
+        const data2 = await response2.json();
+        const featureMapFilepath = data2.filepath;
+        console.log(featureMapFilepath);
+
+        // Remove loader
+        insightMainContiner.removeChild(insightLoader);
+
+        // Add Feature Map div
+        const featureMapContainer = document.createElement('div');
+        featureMapContainer.className = 'feature-map-container';
+        const featureMapTitle = document.createElement('h2');
+        featureMapTitle.className = 'feature-map-title';
+        featureMapTitle.textContent = 'Feature Maps';
+        const featureMapTitleExplanation = document.createElement('p');
+        featureMapTitleExplanation.className = 'feature-map-title-explanation';
+        featureMapTitleExplanation.textContent = '(How the model "sees" the image)';
+        const featureMap = document.createElement('img');
+        featureMap.className = 'feature-map';
+        featureMap.src = featureMapFilepath;
+        featureMapContainer.appendChild(featureMapTitle);
+        featureMapContainer.appendChild(featureMapTitleExplanation);
+        featureMapContainer.appendChild(featureMap);
+        insightMainContiner.appendChild(featureMapContainer);
+
+        // Add Important Pixel Plots div
+        const importantPixelPlotsContainer = document.createElement('div');
+        importantPixelPlotsContainer.className = 'important-pixel-plots-container';
+        const importantPixelPlotsTitle = document.createElement('h2');
+        importantPixelPlotsTitle.className = 'important-pixel-plots-title';
+        importantPixelPlotsTitle.textContent = 'Most Important Pixels';
+        const importantPixelPlots = document.createElement('div');
+        importantPixelPlots.className = 'important-pixel-sub-continer';
+        // Slider for selecting different pixel plots
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = '0';
+        slider.max = '19'; 
+        slider.value = '9'; // Default value corresponds to initially displayed image
+        slider.className = 'important-pixel-slider';
+
+        const importantPixelPlot = document.createElement('img');
+        importantPixelPlot.className = 'important-pixel-plot';
+        importantPixelPlot.src = filepaths[slider.value];
+        importantPixelPlotsContainer.appendChild(importantPixelPlotsTitle);
+        importantPixelPlots.appendChild(importantPixelPlot);
+        importantPixelPlotsContainer.appendChild(slider);
+        importantPixelPlotsContainer.appendChild(importantPixelPlots);
+        insightMainContiner.appendChild(importantPixelPlotsContainer);
+
+        // Event listener for the slider
+        slider.addEventListener('input', function() {
+            importantPixelPlot.src = filepaths[parseInt(this.value)];
+        });
+
+        // Add button to close the overlay
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-insight-button';
+        closeButton.textContent = 'Close';
+        closeButton.addEventListener('click', () => {
+            const images = insightOverlay.querySelectorAll('img');
+            images.forEach(img => {
+                img.src = ''; 
+                img.remove(); 
+            });
+            document.body.removeChild(insightOverlay);
+        });
+        insightMainContiner.appendChild(closeButton);
+
     }
 
 });
