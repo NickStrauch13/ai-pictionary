@@ -1,5 +1,7 @@
 cors.json
 *.joblib
+TL_resnet18_old.pth
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
