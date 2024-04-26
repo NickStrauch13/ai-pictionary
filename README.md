@@ -3,7 +3,7 @@
 
 Welcome to my AI Pictionary Game, an interactive web application designed to demystify the inner workings of machine learning through a fun and engaging drawing game. This project combines the simplicity of Pictionary with the complexities of neural networks, to create a unique educational tool for both ML enthusiasts and the general public.
 
-**Try it out [here](https://pictionary-ai.azurewebsites.net/)!**
+**---->>> [Try it out here!](https://pictionary-ai.azurewebsites.net/) <<<----**
 
 <p align="center">
     <img src="./img/data_overview.png" width="500">
